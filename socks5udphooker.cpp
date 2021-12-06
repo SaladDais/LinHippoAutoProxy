@@ -53,7 +53,7 @@ struct socks5_datagram_header_t {
 #pragma pack(pop)
 
 
-bool is_proxied_datagram(int s, const struct sockaddr* addr) {
+static bool is_proxied_datagram(int s, const struct sockaddr* addr) {
     int sock_type;
     socklen_t length = sizeof(int);
 
@@ -89,7 +89,7 @@ bool is_proxied_datagram(int s, const struct sockaddr* addr) {
     return true;
 }
 
-ssize_t deproxify_inbound_msg(void *buf, ssize_t data_len, sockaddr* src_addr) {
+static ssize_t deproxify_inbound_msg(void *buf, ssize_t data_len, sockaddr* src_addr) {
     auto from_in = (sockaddr_in*)src_addr;
     // Didn't actually come from the proxy, pass it through
     if (from_in->sin_addr.s_addr != LOCALHOST) {
@@ -236,7 +236,7 @@ ssize_t sendmsg(SENDMSG_SIG) {
     return ret;
 }
 
-bool blocking_socks5_handshake() {
+static bool blocking_socks5_handshake() {
     char recvbuf[SOCK_BUFLEN] = {0};
     int timeout = 1000;
     sockaddr_in proxy_addr = { 0 };
@@ -299,7 +299,7 @@ handshake_failed:
 }
 
 __attribute__((constructor))
-void custom_init() {
+static void custom_init() {
     sRealSendTo = (sendtoptr)dlsym(RTLD_NEXT, "sendto");
     sRealSendMsg = (sendmsgptr)dlsym(RTLD_NEXT, "sendmsg");
     sRealRecvFrom = (recvfromptr)dlsym(RTLD_NEXT, "recvfrom");
@@ -313,7 +313,7 @@ void custom_init() {
 
 
 __attribute__((destructor))
-void custom_fini() {
+static void custom_fini() {
     if (sProxyEnabled) {
         shutdown(sProxySock, SHUT_RDWR);
         close(sProxySock);
