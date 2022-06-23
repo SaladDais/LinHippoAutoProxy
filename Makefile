@@ -1,7 +1,6 @@
 CC           = c++
-FLAGS        = -std=c++11
-LDFLAGS      = -shared -Wl,--no-as-needed -ldl
-CXXFLAGS     = -fPIC -Wall -march=native -g
+LDFLAGS      = -shared -Wl, -ldl
+CXXFLAGS     = -fPIC -Wall -march=native -g -std=c++11
 DEBUGFLAGS   = -O0 -D _DEBUG
 RELEASEFLAGS = -O2 -D NDEBUG -combine -fwhole-program
 

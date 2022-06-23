@@ -10,6 +10,10 @@
 #include <netinet/in.h>
 #include <unistd.h>
 
+#ifdef MSG_WAITFORONE
+#  define RECVMMSG_SUPPORTED
+#endif
+
 #define SOCK_BUFLEN 8096
 #define LOCALHOST 0x0100007f
 
@@ -36,7 +40,9 @@ static sendtoptr sRealSendTo = nullptr;
 static sendmsgptr sRealSendMsg = nullptr;
 static recvfromptr sRealRecvFrom = nullptr;
 static recvmsgptr sRealRecvMsg = nullptr;
+#ifdef RECVMMSG_SUPPORTED
 static recvmmsgptr sRealRecvMmsg = nullptr;
+#endif
 
 // Old pcaps make it seem like sizeof() sometimes includes alignment
 // padding at the end of struct. Maybe not.
@@ -159,6 +165,7 @@ ssize_t recvmsg(RECVMSG_SIG) {
     return deproxify_recvmsg_struct(sockfd, msg, data_len);
 }
 
+#ifdef RECVMMSG_SUPPORTED
 int recvmmsg(RECVMMSG_SIG) {
     int ret = sRealRecvMmsg(sockfd, msgvec, vlen, flags, timeout);
     if (ret > 0) {
@@ -173,6 +180,7 @@ int recvmmsg(RECVMMSG_SIG) {
     }
     return ret;
 }
+#endif
 
 ssize_t proxify_outbound_msg(sockaddr_in *proxy_to, const void *buf, ssize_t len, char *send_buf) {
     // Too large, can't send this at all.
@@ -304,7 +312,9 @@ static void custom_init() {
     sRealSendMsg = (sendmsgptr)dlsym(RTLD_NEXT, "sendmsg");
     sRealRecvFrom = (recvfromptr)dlsym(RTLD_NEXT, "recvfrom");
     sRealRecvMsg = (recvmsgptr)dlsym(RTLD_NEXT, "recvmsg");
+#ifdef RECVMMSG_SUPPORTED
     sRealRecvMmsg = (recvmmsgptr)dlsym(RTLD_NEXT, "recvmmsg");
+#endif
 
     if (!blocking_socks5_handshake()) {
         exit(1);
