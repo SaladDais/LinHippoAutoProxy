@@ -1,5 +1,5 @@
 CC           = c++
-LDFLAGS      = -shared -Wl, -ldl
+LDFLAGS      = -shared -ldl
 CXXFLAGS     = -fPIC -Wall -march=native -g -std=c++11
 DEBUGFLAGS   = -O0 -D _DEBUG
 RELEASEFLAGS = -O2 -D NDEBUG -combine -fwhole-program
